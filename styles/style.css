@@ -1,0 +1,53 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Georgia', serif;
+  background-image: url('https://opengameart.org/sites/default/files/background_29.png');
+  background-size: cover;
+  background-position: center;
+  color: #f4f4f4;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#game-container {
+  background: rgba(0, 0, 0, 0.75);
+  padding: 30px;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 90%;
+  text-align: center;
+}
+
+h1 {
+  font-size: 36px;
+  margin-bottom: 20px;
+}
+
+#coins {
+  font-size: 22px;
+  margin-bottom: 20px;
+}
+
+#story {
+  font-size: 18px;
+  margin-bottom: 20px;
+}
+
+#choices button {
+  margin: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  background: #6a994e;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#choices button:hover {
+  background: #588157;
+}
