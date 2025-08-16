@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Telegram RPG</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Georgia', serif;
+      background-image: url('https://opengameart.org/sites/default/files/background_29.png');
+      background-size: cover;
+      background-position: center;
+      color: #f4f4f4;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    #game-container {
+      background: rgba(0, 0, 0, 0.75);
+      padding: 30px;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 36px;
+      margin-bottom: 20px;
+    }
+
+    #coins {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    #story {
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    button {
+      margin: 8px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background: #6a994e;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #588157;
+    }
+  </style>
+</head>
+<body>
+  <div id="game-container">
+    <h1>🛡️ Telegram RPG</h1>
+    <div id="coins">Coins: --</div>
+    <div id="story">Loading...</div>
+    <div id="choices">
+      <button onclick="chooseOption('left')">Go Left</button>
+      <button onclick="chooseOption('right')">Go Right</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+    import { getFirestore, doc, getDoc, setDoc, updateDoc } from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyB2IqL_eMminDAcj83IeK34IIa43dVbEI8",
+      authDomain: "telegramrpg-ebc0a.firebaseapp.com",
+      projectId: "telegramrpg-ebc0a",
+      storageBucket: "telegramrpg-ebc0a.appspot.com",
+      messagingSenderId: "580292998215",
+      appId: "1:580292998215:web:34303854a83a889c45ed62",
+      measurementId: "G-TR5PSFSQ43"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    function getTelegramUserId() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const id = urlParams.get("id") || "guest_" + Math.floor(Math.random() * 1000000);
+      return id;
+    }
+
+    const userId = getTelegramUserId();
+    const userRef = doc(db, "users", userId);
+    let userData = null;
+
+    const coinsEl = document.getElementById("coins");
+    const storyEl = document.getElementById("story");
+
+    async function initGame() {
+      const docSnap = await getDoc(userRef);
+
+      if (!docSnap.exists()) {
+        userData = {
+          coins: 50,
+          currentNode: "start",
+          lastLogin: new Date().toISOString()
+        };
+        await setDoc(userRef, userData);
+      } else {
+        userData = docSnap.data();
+        const today = new Date().toISOString().split("T")[0];
+        const lastLogin = userData.lastLogin?.split("T")[0];
+
+        if (lastLogin !== today) {
+          userData.coins += 50; // Daily bonus
+          userData.lastLogin = new Date().toISOString();
+          await updateDoc(userRef, {
+            coins: userData.coins,
+            lastLogin: userData.lastLogin
+          });
+        }
+      }
+
+      updateUI();
+    }
+
+    function updateUI() {
+      coinsEl.innerText = `Coins: ${userData.coins}`;
+      storyEl.innerText = `You are at the ${userData.currentNode} node. What will you do?`;
+    }
+
+    async function chooseOption(direction) {
+      const cost = 10;
+      if (userData.coins < cost) {
+        alert("Not enough coins!");
+        return;
+      }
+
+      userData.coins -= cost;
+      userData.currentNode = direction === "left" ? "forest" : "castle";
+
+      await updateDoc(userRef, {
+        coins: userData.coins,
+        currentNode: userData.currentNode
+      });
+
+      updateUI();
+    }
+
+    window.chooseOption = chooseOption;
+    window.addEventListener("DOMContentLoaded", initGame);
+  </script>
+</body>
+</html>
